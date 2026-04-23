@@ -1,15 +1,11 @@
-import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 
-import { Sidebar } from "@/components/dashboard/Sidebar";
+import { Header } from "@/components/dashboard/Header";
+import { TemplateForm } from "@/components/reports/TemplateForm";
 import { requireAuth } from "@/lib/auth";
 import { resolveWorkspaceForRequest } from "@/lib/workspace";
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default async function NewTemplatePage() {
   try {
     await requireAuth();
   } catch {
@@ -23,9 +19,11 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
-      <div className="flex min-h-screen flex-1 flex-col">{children}</div>
-    </div>
+    <>
+      <Header title="Create template" description="Save reusable branding and email defaults for future reports." />
+      <main className="flex-1 p-6">
+        <TemplateForm mode="create" />
+      </main>
+    </>
   );
 }

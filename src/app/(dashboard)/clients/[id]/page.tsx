@@ -16,6 +16,10 @@ export default async function EditClientPage({ params }: { params: Promise<{ id:
   const workspace = await resolveWorkspaceForRequest();
 
   if (!workspace.ok) {
+    if (workspace.code === "workspace_not_provisioned") {
+      redirect("/onboarding");
+    }
+
     notFound();
   }
 

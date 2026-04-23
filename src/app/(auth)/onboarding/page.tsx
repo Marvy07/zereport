@@ -1,6 +1,6 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
+import { useOrganizationList, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -24,19 +24,48 @@ const TIMEZONES = [
 
 export default function OnboardingPage() {
   const { user } = useUser();
+  const { setActive } = useOrganizationList();
   const router = useRouter();
   const [workspaceName, setWorkspaceName] = useState(
     user?.organizationMemberships?.[0]?.organization?.name ?? ""
   );
   const [timezone, setTimezone] = useState("America/Chicago");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
     setLoading(true);
-    // TODO: Section 5 will wire this to the API to create the workspace in DB
-    // For now, redirect to dashboard
-    router.push("/dashboard");
+
+    try {
+      const response = await fetch("/api/onboarding/workspace", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ workspaceName, timezone }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string; redirectTo?: string; clerkOrgId?: string }
+        | null;
+
+      if (!response.ok) {
+        throw new Error(payload?.error ?? "Unable to set up workspace.");
+      }
+
+      if (payload?.clerkOrgId && setActive) {
+        await setActive({ organization: payload.clerkOrgId });
+      }
+
+      router.push(payload?.redirectTo ?? "/dashboard");
+      router.refresh();
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "Unable to set up workspace.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -78,6 +107,7 @@ export default function OnboardingPage() {
                 ))}
               </select>
             </div>
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Setting up..." : "Continue to dashboard →"}
             </Button>
