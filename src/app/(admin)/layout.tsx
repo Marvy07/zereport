@@ -1,21 +1,20 @@
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
+import { getSessionMetadata } from "@/lib/auth";
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { userId, sessionClaims } = await auth();
+  const { userId } = await auth();
 
   if (!userId) {
     redirect("/sign-in");
   }
 
-  // Check platform admin — stored in Clerk publicMetadata
-  const isPlatformAdmin = (sessionClaims?.metadata as { platformRole?: string })?.platformRole === "admin";
-
-  if (!isPlatformAdmin) {
+  const metadata = await getSessionMetadata();
+  if (metadata.platformRole !== "admin") {
     redirect("/dashboard");
   }
 

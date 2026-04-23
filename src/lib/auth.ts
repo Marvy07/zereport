@@ -14,3 +14,8 @@ export async function requireAuth(): Promise<string> {
   if (!userId) throw new Error("Unauthorized");
   return userId;
 }
+
+export async function getSessionMetadata(): Promise<{ platformRole?: string }> {
+  const { sessionClaims } = await auth();
+  return (sessionClaims?.metadata as { platformRole?: string }) ?? {};
+}
