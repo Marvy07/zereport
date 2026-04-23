@@ -1,11 +1,13 @@
+import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
-import { requireAuth } from "@/lib/auth";
+
 import { Sidebar } from "@/components/dashboard/Sidebar";
+import { requireAuth } from "@/lib/auth";
 
 export default async function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   try {
     await requireAuth();
@@ -14,13 +16,9 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex min-h-screen bg-slate-50">
       <Sidebar />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <main className="flex-1 overflow-y-auto p-8">
-          {children}
-        </main>
-      </div>
+      <div className="flex min-h-screen flex-1 flex-col">{children}</div>
     </div>
   );
 }

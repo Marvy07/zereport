@@ -1,73 +1,49 @@
-import { FileText, Users, Send, TrendingUp } from "lucide-react";
+import { BarChart3, CalendarClock, FileClock, Users } from "lucide-react";
+
+import { Header } from "@/components/dashboard/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const stats = [
-  {
-    title: "Total Clients",
-    value: "0",
-    description: "Active clients",
-    icon: Users,
-  },
-  {
-    title: "Reports Sent",
-    value: "0",
-    description: "All time",
-    icon: Send,
-  },
-  {
-    title: "Draft Reports",
-    value: "0",
-    description: "Pending review",
-    icon: FileText,
-  },
-  {
-    title: "Scheduled",
-    value: "0",
-    description: "Active schedules",
-    icon: TrendingUp,
-  },
+  { label: "Total Clients", value: "0", icon: Users },
+  { label: "Reports Sent", value: "0", icon: BarChart3 },
+  { label: "Draft Reports", value: "0", icon: FileClock },
+  { label: "Scheduled", value: "0", icon: CalendarClock },
 ];
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Welcome to Zereport. Here&apos;s an overview of your workspace.
-        </p>
-      </div>
-
-      {/* Stats grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={stat.title}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600">
-                  {stat.title}
-                </CardTitle>
+    <>
+      <Header
+        title="Dashboard"
+        description="Track client activity, delivery status, and upcoming reporting work."
+      />
+      <main className="flex-1 space-y-6 p-6">
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {stats.map(({ label, value, icon: Icon }) => (
+            <Card key={label}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-slate-500">{label}</CardTitle>
                 <Icon className="h-4 w-4 text-slate-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-slate-500 mt-1">{stat.description}</p>
+                <div className="text-3xl font-semibold tracking-tight text-slate-950">{value}</div>
+                <p className="mt-1 text-xs text-slate-500">No data yet. Connect clients and reports to populate this card.</p>
               </CardContent>
             </Card>
-          );
-        })}
-      </div>
+          ))}
+        </section>
 
-      {/* Recent activity placeholder */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Recent Reports</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-slate-500">No reports yet. Create your first client to get started.</p>
-        </CardContent>
-      </Card>
-    </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent reports</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-sm text-slate-500">
+              Your most recent generated and scheduled reports will appear here.
+            </div>
+          </CardContent>
+        </Card>
+      </main>
+    </>
   );
 }

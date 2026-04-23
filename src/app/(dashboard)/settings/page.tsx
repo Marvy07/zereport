@@ -1,11 +1,23 @@
+import { Header } from "@/components/dashboard/Header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 export default function SettingsPage() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
-        <p className="text-sm text-slate-500 mt-1">Manage your workspace settings and branding.</p>
-      </div>
-      <p className="text-sm text-slate-400">Settings UI coming in a later section.</p>
-    </div>
+    <>
+      <Header
+        title="Settings"
+        description="Review account preferences, workspace defaults, and future platform controls."
+      />
+      <main className="flex-1 p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Workspace settings</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm leading-6 text-slate-500">
+            Settings controls will live here once account preferences, branding options, and automation defaults are wired up.
+          </CardContent>
+        </Card>
+      </main>
+    </>
   );
 }

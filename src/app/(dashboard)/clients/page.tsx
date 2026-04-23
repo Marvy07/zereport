@@ -1,22 +1,24 @@
 import { Users } from "lucide-react";
+
+import { Header } from "@/components/dashboard/Header";
 import { EmptyState } from "@/components/shared/EmptyState";
 
 export default function ClientsPage() {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Clients</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage your clients and their projects.</p>
-        </div>
-      </div>
-      <EmptyState
-        icon={Users}
-        title="No clients yet"
-        description="Add your first client to start creating reports."
-        actionLabel="Add client"
-        actionHref="/clients/new"
+    <>
+      <Header
+        title="Clients"
+        description="Manage the businesses you report for and keep their records organized."
       />
-    </div>
+      <main className="flex-1 p-6">
+        <EmptyState
+          icon={Users}
+          title="No clients yet"
+          description="Add your first client to start organizing reporting work, contacts, and delivery history."
+          actionLabel="Add client"
+          actionHref="/clients/new"
+        />
+      </main>
+    </>
   );
 }
