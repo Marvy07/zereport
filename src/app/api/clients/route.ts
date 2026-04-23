@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/generated/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   const workspace = await resolveWorkspaceForRequest();
 
   if (!workspace.ok) {
-    return NextResponse.json({ error: workspace.error }, { status: workspace.status });
+    return NextResponse.json({ error: workspace.error, code: workspace.code }, { status: workspace.status });
   }
 
   const includeArchived = req.nextUrl.searchParams.get("includeArchived") === "true";
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     const workspace = await resolveWorkspaceForRequest();
 
     if (!workspace.ok) {
-      return NextResponse.json({ error: workspace.error }, { status: workspace.status });
+      return NextResponse.json({ error: workspace.error, code: workspace.code }, { status: workspace.status });
     }
 
     const client = await prisma.client.create({
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ client }, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return NextResponse.json(
         {

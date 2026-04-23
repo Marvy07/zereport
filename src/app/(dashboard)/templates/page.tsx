@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { resolveWorkspaceForRequest } from "@/lib/workspace";
+import { handleWorkspaceResolution } from "@/lib/workspace-navigation";
 
 export default async function TemplatesPage() {
   try {
@@ -18,21 +19,7 @@ export default async function TemplatesPage() {
   }
 
   const workspace = await resolveWorkspaceForRequest();
-
-  if (!workspace.ok) {
-    if (workspace.code === "workspace_not_provisioned") {
-      redirect("/onboarding");
-    }
-
-    return (
-      <>
-        <Header title="Templates" description="Manage reusable branding and email defaults for client reports." />
-        <main className="flex-1 p-6">
-          <EmptyState icon={LayoutTemplate} title="Templates unavailable" description={workspace.error} actionLabel="Refresh" actionHref="/templates" />
-        </main>
-      </>
-    );
-  }
+  handleWorkspaceResolution(workspace);
 
   const templates = await prisma.reportTemplate.findMany({
     where: { workspaceId: workspace.workspaceId },
@@ -66,7 +53,7 @@ export default async function TemplatesPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 bg-white text-slate-700">
-                      {templates.map((template) => (
+                      {templates.map((template: { id: string; name: string; description: string | null; isDefault: boolean; updatedAt: Date }) => (
                         <tr key={template.id}>
                           <td className="px-4 py-4 font-medium text-slate-950">{template.name}</td>
                           <td className="px-4 py-4">{template.description ?? <span className="text-slate-400">—</span>}</td>

@@ -5,6 +5,7 @@ import { TemplateForm } from "@/components/reports/TemplateForm";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { resolveWorkspaceForRequest } from "@/lib/workspace";
+import { handleWorkspaceResolution } from "@/lib/workspace-navigation";
 
 export default async function EditTemplatePage({ params }: { params: Promise<{ id: string }> }) {
   try {
@@ -14,14 +15,7 @@ export default async function EditTemplatePage({ params }: { params: Promise<{ i
   }
 
   const workspace = await resolveWorkspaceForRequest();
-
-  if (!workspace.ok) {
-    if (workspace.code === "workspace_not_provisioned") {
-      redirect("/onboarding");
-    }
-
-    notFound();
-  }
+  handleWorkspaceResolution(workspace);
 
   const { id } = await params;
   const template = await prisma.reportTemplate.findFirst({

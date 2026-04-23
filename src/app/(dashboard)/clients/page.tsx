@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { resolveWorkspaceForRequest } from "@/lib/workspace";
+import { handleWorkspaceResolution } from "@/lib/workspace-navigation";
 
 export default async function ClientsPage() {
   try {
@@ -18,26 +19,7 @@ export default async function ClientsPage() {
   }
 
   const workspace = await resolveWorkspaceForRequest();
-
-  if (!workspace.ok) {
-    return (
-      <>
-        <Header
-          title="Clients"
-          description="Manage the businesses you report for and keep their records organized."
-        />
-        <main className="flex-1 p-6">
-          <EmptyState
-            icon={Users}
-            title="Client workspace unavailable"
-            description={workspace.error}
-            actionLabel="Refresh"
-            actionHref="/clients"
-          />
-        </main>
-      </>
-    );
-  }
+  handleWorkspaceResolution(workspace);
 
   const clients = await prisma.client.findMany({
     where: {
@@ -84,7 +66,7 @@ export default async function ClientsPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 bg-white text-slate-700">
-                      {clients.map((client) => (
+                      {clients.map((client: { id: string; name: string; primaryEmail: string; website: string | null; status: string; createdAt: Date }) => (
                         <tr key={client.id}>
                           <td className="px-4 py-4 font-medium text-slate-950">{client.name}</td>
                           <td className="px-4 py-4">{client.primaryEmail}</td>

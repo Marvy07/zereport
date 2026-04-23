@@ -1,5 +1,5 @@
-import { clerkClient } from "@clerk/nextjs/server";
-import { Prisma } from "@prisma/client";
+import { clerkClient, auth } from "@clerk/nextjs/server";
+import { Prisma } from "@/generated/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -19,20 +19,30 @@ function slugifyWorkspaceName(value: string) {
     .slice(0, 48) || "workspace";
 }
 
-async function buildUniqueSlug(base: string) {
+async function buildUniqueSlug(base: string, existingWorkspaceId?: string) {
   let slug = base;
   let counter = 1;
 
-  while (await prisma.workspace.findUnique({ where: { slug } })) {
+  for (;;) {
+    const existingWorkspace = await prisma.workspace.findUnique({ where: { slug } });
+
+    if (!existingWorkspace || existingWorkspace.id === existingWorkspaceId) {
+      return slug;
+    }
+
     counter += 1;
     slug = `${base}-${counter}`;
   }
-
-  return slug;
 }
 
 export async function POST(req: NextRequest) {
   try {
+    const { userId, orgId } = await auth();
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+    }
+
     const body = await req.json();
     const { workspaceName, timezone } = onboardingWorkspaceSchema.parse(body);
     const platformUser = await syncPlatformUser();
@@ -42,18 +52,24 @@ export async function POST(req: NextRequest) {
     }
 
     const client = await clerkClient();
-    const memberships = await client.users.getOrganizationMembershipList({ userId: platformUser.clerkUserId });
-    const existingMembership = memberships.data[0];
 
-    const organization = existingMembership
-      ? await client.organizations.getOrganization({ organizationId: existingMembership.organization.id })
+    const organization = orgId
+      ? await client.organizations.getOrganization({ organizationId: orgId })
       : await client.organizations.createOrganization({
           name: workspaceName,
           slug: slugifyWorkspaceName(workspaceName),
           createdBy: platformUser.clerkUserId,
         });
 
-    const workspaceSlug = await buildUniqueSlug(slugifyWorkspaceName(workspaceName));
+    const existingWorkspace = await prisma.workspace.findUnique({
+      where: { clerkOrgId: organization.id },
+      select: { id: true, slug: true },
+    });
+
+    const workspaceSlug = await buildUniqueSlug(
+      slugifyWorkspaceName(workspaceName),
+      existingWorkspace?.id
+    );
 
     const workspace = await prisma.workspace.upsert({
       where: { clerkOrgId: organization.id },
@@ -65,7 +81,9 @@ export async function POST(req: NextRequest) {
       },
       update: {
         name: workspaceName,
+        slug: workspaceSlug,
         timezone,
+        deletedAt: null,
       },
     });
 
@@ -87,7 +105,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true, redirectTo: "/dashboard", clerkOrgId: organization.id });
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
