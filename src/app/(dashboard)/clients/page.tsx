@@ -1,14 +1,49 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Globe, Pencil, Users } from "lucide-react";
 
 import { Header } from "@/components/dashboard/Header";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { resolveWorkspaceForRequest } from "@/lib/workspace";
 
 export default async function ClientsPage() {
+  try {
+    await requireAuth();
+  } catch {
+    redirect("/sign-in");
+  }
+
+  const workspace = await resolveWorkspaceForRequest();
+
+  if (!workspace.ok) {
+    return (
+      <>
+        <Header
+          title="Clients"
+          description="Manage the businesses you report for and keep their records organized."
+        />
+        <main className="flex-1 p-6">
+          <EmptyState
+            icon={Users}
+            title="Client workspace unavailable"
+            description={workspace.error}
+            actionLabel="Refresh"
+            actionHref="/clients"
+          />
+        </main>
+      </>
+    );
+  }
+
   const clients = await prisma.client.findMany({
+    where: {
+      workspaceId: workspace.workspaceId,
+      status: { not: "ARCHIVED" },
+    },
     orderBy: { createdAt: "desc" },
   });
 
@@ -71,7 +106,10 @@ export default async function ClientsPage() {
                           <td className="px-4 py-4">{client.status}</td>
                           <td className="px-4 py-4">{new Date(client.createdAt).toLocaleDateString()}</td>
                           <td className="px-4 py-4">
-                            <Link href={`/clients/${client.id}`} className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:underline">
+                            <Link
+                              href={`/clients/${client.id}`}
+                              className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:underline"
+                            >
                               <Pencil className="h-3.5 w-3.5" />
                               Edit
                             </Link>

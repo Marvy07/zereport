@@ -1,12 +1,31 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { ClientForm } from "@/components/clients/ClientForm";
 import { Header } from "@/components/dashboard/Header";
+import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { resolveWorkspaceForRequest } from "@/lib/workspace";
 
 export default async function EditClientPage({ params }: { params: Promise<{ id: string }> }) {
+  try {
+    await requireAuth();
+  } catch {
+    redirect("/sign-in");
+  }
+
+  const workspace = await resolveWorkspaceForRequest();
+
+  if (!workspace.ok) {
+    notFound();
+  }
+
   const { id } = await params;
-  const client = await prisma.client.findUnique({ where: { id } });
+  const client = await prisma.client.findFirst({
+    where: {
+      id,
+      workspaceId: workspace.workspaceId,
+    },
+  });
 
   if (!client) {
     notFound();

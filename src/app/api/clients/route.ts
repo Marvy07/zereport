@@ -1,21 +1,32 @@
 import { Prisma } from "@prisma/client";
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 
 import { prisma } from "@/lib/prisma";
+import { resolveWorkspaceForRequest } from "@/lib/workspace";
 import { clientSchema } from "@/lib/validations/client";
 
-async function getFallbackWorkspaceId() {
-  const workspace = await prisma.workspace.findFirst({
-    orderBy: { createdAt: "asc" },
-    select: { id: true },
-  });
+export async function GET(req: NextRequest) {
+  const { userId } = await auth();
 
-  return workspace?.id ?? null;
-}
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
 
-export async function GET() {
-  // TODO: Enforce current workspace filtering after onboarding creates workspace records.
+  const workspace = await resolveWorkspaceForRequest();
+
+  if (!workspace.ok) {
+    return NextResponse.json({ error: workspace.error }, { status: workspace.status });
+  }
+
+  const includeArchived = req.nextUrl.searchParams.get("includeArchived") === "true";
+
   const clients = await prisma.client.findMany({
+    where: {
+      workspaceId: workspace.workspaceId,
+      ...(includeArchived ? {} : { status: { not: "ARCHIVED" } }),
+    },
     orderBy: { createdAt: "desc" },
   });
 
@@ -23,24 +34,25 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     const data = clientSchema.parse(body);
-    const workspaceId = await getFallbackWorkspaceId();
+    const workspace = await resolveWorkspaceForRequest();
 
-    if (!workspaceId) {
-      return NextResponse.json(
-        {
-          error: "No workspace found. Complete workspace onboarding before creating clients.",
-        },
-        { status: 400 }
-      );
+    if (!workspace.ok) {
+      return NextResponse.json({ error: workspace.error }, { status: workspace.status });
     }
 
     const client = await prisma.client.create({
       data: {
         ...data,
-        workspaceId,
+        workspaceId: workspace.workspaceId,
       },
     });
 
@@ -55,11 +67,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (error instanceof Error && "issues" in error) {
+    if (error instanceof ZodError) {
       return NextResponse.json(
         {
           error: "Validation failed.",
-          issues: (error as Error & { issues: unknown }).issues,
+          issues: error.issues,
         },
         { status: 400 }
       );
