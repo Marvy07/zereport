@@ -1,4 +1,4 @@
-import { clerkClient } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -31,6 +31,21 @@ async function buildUniqueSlug(base: string) {
   return slug;
 }
 
+async function resolveTargetOrganization(workspaceName: string, clerkUserId: string) {
+  const { orgId } = await auth();
+  const client = await clerkClient();
+
+  if (orgId) {
+    return client.organizations.getOrganization({ organizationId: orgId });
+  }
+
+  return client.organizations.createOrganization({
+    name: workspaceName,
+    slug: slugifyWorkspaceName(workspaceName),
+    createdBy: clerkUserId,
+  });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -41,26 +56,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     }
 
-    const client = await clerkClient();
-    const memberships = await client.users.getOrganizationMembershipList({ userId: platformUser.clerkUserId });
-    const existingMembership = memberships.data[0];
+    const organization = await resolveTargetOrganization(workspaceName, platformUser.clerkUserId);
 
-    const organization = existingMembership
-      ? await client.organizations.getOrganization({ organizationId: existingMembership.organization.id })
-      : await client.organizations.createOrganization({
-          name: workspaceName,
-          slug: slugifyWorkspaceName(workspaceName),
-          createdBy: platformUser.clerkUserId,
-        });
-
-    const workspaceSlug = await buildUniqueSlug(slugifyWorkspaceName(workspaceName));
+    const existingWorkspace = await prisma.workspace.findUnique({
+      where: { clerkOrgId: organization.id },
+      select: { id: true, slug: true },
+    });
 
     const workspace = await prisma.workspace.upsert({
       where: { clerkOrgId: organization.id },
       create: {
         clerkOrgId: organization.id,
         name: workspaceName,
-        slug: workspaceSlug,
+        slug: existingWorkspace?.slug ?? (await buildUniqueSlug(slugifyWorkspaceName(workspaceName))),
         timezone,
       },
       update: {

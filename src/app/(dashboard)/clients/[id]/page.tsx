@@ -4,7 +4,7 @@ import { ClientForm } from "@/components/clients/ClientForm";
 import { Header } from "@/components/dashboard/Header";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { resolveWorkspaceForRequest } from "@/lib/workspace";
+import { handleWorkspaceResolutionFailure, resolveWorkspaceForRequest } from "@/lib/workspace";
 
 export default async function EditClientPage({ params }: { params: Promise<{ id: string }> }) {
   try {
@@ -16,11 +16,7 @@ export default async function EditClientPage({ params }: { params: Promise<{ id:
   const workspace = await resolveWorkspaceForRequest();
 
   if (!workspace.ok) {
-    if (workspace.code === "workspace_not_provisioned") {
-      redirect("/onboarding");
-    }
-
-    notFound();
+    handleWorkspaceResolutionFailure(workspace);
   }
 
   const { id } = await params;

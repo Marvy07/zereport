@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { resolveWorkspaceForRequest } from "@/lib/workspace";
+import { handleWorkspaceResolutionFailure, resolveWorkspaceForRequest } from "@/lib/workspace";
 
 export default async function TemplatesPage() {
   try {
@@ -20,18 +20,7 @@ export default async function TemplatesPage() {
   const workspace = await resolveWorkspaceForRequest();
 
   if (!workspace.ok) {
-    if (workspace.code === "workspace_not_provisioned") {
-      redirect("/onboarding");
-    }
-
-    return (
-      <>
-        <Header title="Templates" description="Manage reusable branding and email defaults for client reports." />
-        <main className="flex-1 p-6">
-          <EmptyState icon={LayoutTemplate} title="Templates unavailable" description={workspace.error} actionLabel="Refresh" actionHref="/templates" />
-        </main>
-      </>
-    );
+    handleWorkspaceResolutionFailure(workspace);
   }
 
   const templates = await prisma.reportTemplate.findMany({

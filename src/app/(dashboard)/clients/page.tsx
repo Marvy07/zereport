@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { resolveWorkspaceForRequest } from "@/lib/workspace";
+import { handleWorkspaceResolutionFailure, resolveWorkspaceForRequest } from "@/lib/workspace";
 
 export default async function ClientsPage() {
   try {
@@ -20,23 +20,7 @@ export default async function ClientsPage() {
   const workspace = await resolveWorkspaceForRequest();
 
   if (!workspace.ok) {
-    return (
-      <>
-        <Header
-          title="Clients"
-          description="Manage the businesses you report for and keep their records organized."
-        />
-        <main className="flex-1 p-6">
-          <EmptyState
-            icon={Users}
-            title="Client workspace unavailable"
-            description={workspace.error}
-            actionLabel="Refresh"
-            actionHref="/clients"
-          />
-        </main>
-      </>
-    );
+    handleWorkspaceResolutionFailure(workspace);
   }
 
   const clients = await prisma.client.findMany({

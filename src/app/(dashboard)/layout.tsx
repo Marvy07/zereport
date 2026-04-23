@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { requireAuth } from "@/lib/auth";
-import { resolveWorkspaceForRequest } from "@/lib/workspace";
+import { handleWorkspaceResolutionFailure, resolveWorkspaceForRequest } from "@/lib/workspace";
 
 export default async function DashboardLayout({
   children,
@@ -18,8 +18,8 @@ export default async function DashboardLayout({
 
   const workspace = await resolveWorkspaceForRequest();
 
-  if (!workspace.ok && workspace.code === "workspace_not_provisioned") {
-    redirect("/onboarding");
+  if (!workspace.ok) {
+    handleWorkspaceResolutionFailure(workspace);
   }
 
   return (

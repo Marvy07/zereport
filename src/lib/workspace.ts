@@ -1,5 +1,6 @@
 import { WorkspaceRole } from "@prisma/client";
 import { auth } from "@clerk/nextjs/server";
+import { notFound, redirect } from "next/navigation";
 
 import { prisma } from "@/lib/prisma";
 import { syncPlatformUser } from "@/lib/platform-user";
@@ -122,6 +123,18 @@ export async function resolveWorkspaceForRequest(): Promise<WorkspaceResolution>
     },
     membership,
   };
+}
+
+export function handleWorkspaceResolutionFailure(resolution: Extract<WorkspaceResolution, { ok: false }>): never {
+  switch (resolution.code) {
+    case "unauthenticated":
+      redirect("/sign-in");
+    case "no_active_workspace":
+    case "workspace_not_provisioned":
+      redirect("/onboarding");
+    case "membership_missing":
+      notFound();
+  }
 }
 
 export async function requireResolvedWorkspace() {

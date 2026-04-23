@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Header } from "@/components/dashboard/Header";
 import { TemplateForm } from "@/components/reports/TemplateForm";
 import { requireAuth } from "@/lib/auth";
-import { resolveWorkspaceForRequest } from "@/lib/workspace";
+import { handleWorkspaceResolutionFailure, resolveWorkspaceForRequest } from "@/lib/workspace";
 
 export default async function NewTemplatePage() {
   try {
@@ -14,8 +14,8 @@ export default async function NewTemplatePage() {
 
   const workspace = await resolveWorkspaceForRequest();
 
-  if (!workspace.ok && workspace.code === "workspace_not_provisioned") {
-    redirect("/onboarding");
+  if (!workspace.ok) {
+    handleWorkspaceResolutionFailure(workspace);
   }
 
   return (
