@@ -22,15 +22,20 @@ const navItems = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  workspaceName?: string;
+}
+
+export function Sidebar({ workspaceName }: SidebarProps) {
   const pathname = usePathname();
 
   return (
     <aside className="hidden h-screen w-64 shrink-0 flex-col border-r border-slate-800 bg-slate-950 text-slate-100 md:flex">
-      <div className="flex h-16 items-center border-b border-slate-800 px-6">
+      <div className="flex h-16 flex-col justify-center border-b border-slate-800 px-6">
         <Link href="/dashboard" className="text-xl font-semibold tracking-tight">
           Zereport
         </Link>
+        {workspaceName ? <p className="truncate text-xs text-slate-400">{workspaceName}</p> : null}
       </div>
 
       <nav className="flex-1 space-y-1 p-4">

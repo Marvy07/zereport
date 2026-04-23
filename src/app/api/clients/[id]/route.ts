@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/generated/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
@@ -28,7 +28,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
   const workspace = await resolveWorkspaceForRequest();
 
   if (!workspace.ok) {
-    return NextResponse.json({ error: workspace.error }, { status: workspace.status });
+    return NextResponse.json({ error: workspace.error, code: workspace.code }, { status: workspace.status });
   }
 
   const { id } = await params;
@@ -52,7 +52,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const workspace = await resolveWorkspaceForRequest();
 
     if (!workspace.ok) {
-      return NextResponse.json({ error: workspace.error }, { status: workspace.status });
+      return NextResponse.json({ error: workspace.error, code: workspace.code }, { status: workspace.status });
     }
 
     const { id } = await params;
@@ -85,7 +85,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     });
 
     return NextResponse.json({ client });
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return NextResponse.json(
         { error: "A client with this primary email already exists in the workspace." },
@@ -119,7 +119,7 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
     const workspace = await resolveWorkspaceForRequest();
 
     if (!workspace.ok) {
-      return NextResponse.json({ error: workspace.error }, { status: workspace.status });
+      return NextResponse.json({ error: workspace.error, code: workspace.code }, { status: workspace.status });
     }
 
     const { id } = await params;

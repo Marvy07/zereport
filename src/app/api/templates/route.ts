@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/generated/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
 
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ template }, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof ZodError) {
       return NextResponse.json({ error: "Validation failed.", issues: error.issues }, { status: 400 });
     }

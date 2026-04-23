@@ -1,4 +1,4 @@
-import { WorkspaceRole } from "@prisma/client";
+import { WorkspaceRole } from "@/generated/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
 

@@ -1,8 +1,8 @@
 "use client";
 
-import { useOrganizationList, useUser } from "@clerk/nextjs";
+import { useOrganization, useOrganizationList, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,11 +24,14 @@ const TIMEZONES = [
 
 export default function OnboardingPage() {
   const { user } = useUser();
+  const { organization } = useOrganization();
   const { setActive } = useOrganizationList();
   const router = useRouter();
-  const [workspaceName, setWorkspaceName] = useState(
-    user?.organizationMemberships?.[0]?.organization?.name ?? ""
+  const defaultWorkspaceName = useMemo(
+    () => organization?.name ?? user?.fullName ?? user?.firstName ?? "",
+    [organization?.name, user?.fullName, user?.firstName]
   );
+  const [workspaceName, setWorkspaceName] = useState(defaultWorkspaceName);
   const [timezone, setTimezone] = useState("America/Chicago");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

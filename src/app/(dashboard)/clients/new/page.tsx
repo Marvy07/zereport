@@ -1,7 +1,21 @@
+import { redirect } from "next/navigation";
+
 import { ClientForm } from "@/components/clients/ClientForm";
 import { Header } from "@/components/dashboard/Header";
+import { requireAuth } from "@/lib/auth";
+import { resolveWorkspaceForRequest } from "@/lib/workspace";
+import { handleWorkspaceResolution } from "@/lib/workspace-navigation";
 
-export default function NewClientPage() {
+export default async function NewClientPage() {
+  try {
+    await requireAuth();
+  } catch {
+    redirect("/sign-in");
+  }
+
+  const workspace = await resolveWorkspaceForRequest();
+  handleWorkspaceResolution(workspace);
+
   return (
     <>
       <Header
