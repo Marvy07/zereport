@@ -6,5 +6,440 @@ datasource db {
   provider = "postgresql"
 }
 
-// Full schema will be added in Section 2
-// Note: Connection URLs are configured in prisma.config.ts (Prisma v7+)
+model PlatformUser {
+  id              String    @id @default(cuid())
+  clerkUserId     String    @unique
+  email           String    @unique
+  firstName       String?
+  lastName        String?
+  imageUrl        String?
+  isPlatformAdmin Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  lastSeenAt      DateTime?
+
+  workspaceMemberships WorkspaceMember[]
+  auditLogs            AuditLog[]
+
+  @@index([clerkUserId])
+  @@index([email])
+}
+
+model Workspace {
+  id              String    @id @default(cuid())
+  clerkOrgId      String    @unique
+  name            String
+  slug            String    @unique
+  timezone        String    @default("America/Chicago")
+  logoPath        String?
+  primaryColor    String    @default("#2563EB")
+  secondaryColor  String    @default("#0F172A")
+  fontFamily      String    @default("Inter")
+  emailSenderName String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  members         WorkspaceMember[]
+  clients         Client[]
+  projects        Project[]
+  integrations    Integration[]
+  reportTemplates ReportTemplate[]
+  reports         Report[]
+  subscriptions   Subscription[]
+  auditLogs       AuditLog[]
+  featureFlags    FeatureFlag[]
+  reportSchedules ReportSchedule[]
+
+  @@index([slug])
+  @@index([clerkOrgId])
+}
+
+model WorkspaceMember {
+  id             String        @id @default(cuid())
+  workspaceId    String
+  platformUserId String
+  role           WorkspaceRole
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  workspace    Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  platformUser PlatformUser @relation(fields: [platformUserId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, platformUserId])
+  @@index([workspaceId])
+  @@index([platformUserId])
+}
+
+enum WorkspaceRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+model Client {
+  id           String       @id @default(cuid())
+  workspaceId  String
+  name         String
+  companyName  String?
+  primaryEmail String
+  website      String?
+  notes        String?
+  status       ClientStatus @default(ACTIVE)
+  logoPath     String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  archivedAt   DateTime?
+
+  workspace Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  contacts  ClientContact[]
+  projects  Project[]
+  reports   Report[]
+
+  @@unique([workspaceId, primaryEmail])
+  @@index([workspaceId])
+  @@index([status])
+}
+
+enum ClientStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+model ClientContact {
+  id        String   @id @default(cuid())
+  clientId  String
+  name      String
+  email     String
+  title     String?
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, email])
+  @@index([clientId])
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  workspaceId String
+  clientId    String
+  name        String
+  description String?
+  status      ProjectStatus @default(ACTIVE)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  archivedAt  DateTime?
+
+  workspace        Workspace                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  client           Client                   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  integrationLinks IntegrationProjectLink[]
+  reports          Report[]
+  reportSchedules  ReportSchedule[]
+
+  @@index([workspaceId])
+  @@index([clientId])
+  @@index([status])
+}
+
+enum ProjectStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ARCHIVED
+}
+
+model Integration {
+  id                String            @id @default(cuid())
+  workspaceId       String
+  type              IntegrationType
+  name              String
+  status            IntegrationStatus @default(CONNECTED)
+  accessTokenEnc    String?
+  refreshTokenEnc   String?
+  apiKeyEnc         String?
+  tokenExpiresAt    DateTime?
+  externalAccountId String?
+  configJson        Json?
+  lastSyncedAt      DateTime?
+  lastError         String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  workspace      Workspace                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  projectLinks   IntegrationProjectLink[]
+  reportSections ReportSection[]
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+  @@index([type])
+  @@index([status])
+}
+
+enum IntegrationType {
+  MANUAL
+  GOOGLE_SHEETS
+  NOTION
+  TRELLO
+  GOHIGHLEVEL
+  ZAPIER_WEBHOOK
+}
+
+enum IntegrationStatus {
+  CONNECTED
+  EXPIRED
+  ERROR
+  DISCONNECTED
+}
+
+model IntegrationProjectLink {
+  id                   String   @id @default(cuid())
+  integrationId        String
+  projectId            String
+  externalResourceId   String?
+  externalResourceName String?
+  mappingJson          Json?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  integration Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([integrationId, projectId])
+  @@index([projectId])
+  @@index([integrationId])
+}
+
+model ReportTemplate {
+  id                   String   @id @default(cuid())
+  workspaceId          String
+  name                 String
+  description          String?
+  isDefault            Boolean  @default(false)
+  logoPath             String?
+  primaryColor         String?
+  secondaryColor       String?
+  fontFamily           String?
+  emailSubjectTemplate String?
+  emailBodyTemplate    String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  workspace       Workspace               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  sections        ReportTemplateSection[]
+  reports         Report[]
+  reportSchedules ReportSchedule[]
+
+  @@index([workspaceId])
+  @@index([isDefault])
+}
+
+model ReportTemplateSection {
+  id               String            @id @default(cuid())
+  reportTemplateId String
+  type             ReportSectionType
+  title            String
+  sortOrder        Int
+  isRequired       Boolean           @default(false)
+  configJson       Json?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  reportTemplate ReportTemplate @relation(fields: [reportTemplateId], references: [id], onDelete: Cascade)
+
+  @@index([reportTemplateId])
+  @@index([sortOrder])
+}
+
+enum ReportSectionType {
+  TEXT
+  METRICS_TABLE
+  NEXT_STEPS
+  INTEGRATION_DATA
+  DIVIDER
+  IMAGE
+}
+
+model Report {
+  id               String       @id @default(cuid())
+  workspaceId      String
+  clientId         String
+  projectId        String?
+  reportTemplateId String?
+  title            String
+  periodStart      DateTime?
+  periodEnd        DateTime?
+  status           ReportStatus @default(DRAFT)
+  pdfPath          String?
+  webSlug          String?      @unique
+  sentAt           DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  workspace      Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  client         Client           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  project        Project?         @relation(fields: [projectId], references: [id])
+  reportTemplate ReportTemplate?  @relation(fields: [reportTemplateId], references: [id])
+  sections       ReportSection[]
+  deliveries     ReportDelivery[]
+
+  @@index([workspaceId])
+  @@index([clientId])
+  @@index([status])
+  @@index([webSlug])
+}
+
+enum ReportStatus {
+  DRAFT
+  READY
+  SENT
+  ARCHIVED
+}
+
+model ReportSection {
+  id            String            @id @default(cuid())
+  reportId      String
+  integrationId String?
+  type          ReportSectionType
+  title         String
+  sortOrder     Int
+  contentJson   Json?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  report      Report       @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  integration Integration? @relation(fields: [integrationId], references: [id])
+
+  @@index([reportId])
+  @@index([sortOrder])
+}
+
+model ReportDelivery {
+  id             String               @id @default(cuid())
+  reportId       String
+  recipientEmail String
+  recipientName  String?
+  status         ReportDeliveryStatus @default(PENDING)
+  sentAt         DateTime?
+  openedAt       DateTime?
+  errorMsg       String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+  @@index([status])
+}
+
+enum ReportDeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+  OPENED
+}
+
+model ReportSchedule {
+  id               String            @id @default(cuid())
+  workspaceId      String
+  projectId        String?
+  reportTemplateId String?
+  frequency        ScheduleFrequency
+  dayOfWeek        Int?
+  dayOfMonth       Int?
+  hour             Int               @default(9)
+  timezone         String            @default("America/Chicago")
+  isActive         Boolean           @default(true)
+  lastRunAt        DateTime?
+  nextRunAt        DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  workspace      Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  project        Project?        @relation(fields: [projectId], references: [id])
+  reportTemplate ReportTemplate? @relation(fields: [reportTemplateId], references: [id])
+
+  @@index([workspaceId])
+  @@index([isActive])
+  @@index([nextRunAt])
+}
+
+enum ScheduleFrequency {
+  WEEKLY
+  MONTHLY
+  BIWEEKLY
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  workspaceId          String             @unique
+  stripeCustomerId     String             @unique
+  stripeSubscriptionId String?            @unique
+  plan                 SubscriptionPlan   @default(FREE)
+  status               SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([stripeCustomerId])
+  @@index([plan])
+  @@index([status])
+}
+
+enum SubscriptionPlan {
+  FREE
+  STARTER
+  PRO
+  AGENCY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  TRIALING
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  workspaceId    String?
+  platformUserId String?
+  action         String
+  resourceType   String?
+  resourceId     String?
+  ipAddress      String?
+  userAgent      String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  workspace    Workspace?    @relation(fields: [workspaceId], references: [id])
+  platformUser PlatformUser? @relation(fields: [platformUserId], references: [id])
+
+  @@index([workspaceId])
+  @@index([platformUserId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model FeatureFlag {
+  id          String   @id @default(cuid())
+  workspaceId String?
+  key         String
+  value       Boolean  @default(false)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace? @relation(fields: [workspaceId], references: [id])
+
+  @@unique([workspaceId, key])
+  @@index([key])
+}
