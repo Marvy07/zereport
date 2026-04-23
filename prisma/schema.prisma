@@ -1,0 +1,10 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Full schema will be added in Section 2
+// Note: Connection URLs are configured in prisma.config.ts (Prisma v7+)
