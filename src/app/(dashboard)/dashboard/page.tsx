@@ -1,7 +1,8 @@
 export default function DashboardPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p className="text-muted-foreground">Dashboard — Coming soon.</p>
+    <div>
+      <h1 className="text-2xl font-bold text-slate-900 mb-2">Dashboard</h1>
+      <p className="text-slate-500">Welcome to Zereport. Your reports will appear here.</p>
     </div>
   );
 }
