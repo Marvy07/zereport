@@ -1,3 +1,5 @@
+import { randomBytes } from "crypto";
+
 import { prisma } from "@/lib/prisma";
 
 function slugifySegment(value: string) {
@@ -16,7 +18,7 @@ export function createReportSlug(title: string, clientName?: string | null) {
     .join("-")
     .slice(0, 72);
 
-  const uniqueSuffix = Math.random().toString(36).slice(2, 8);
+  const uniqueSuffix = randomBytes(4).toString("hex").slice(0, 8);
   return `${base || "report"}-${uniqueSuffix}`;
 }
 

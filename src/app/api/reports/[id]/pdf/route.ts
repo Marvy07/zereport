@@ -69,8 +69,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         },
       });
 
-      // TODO: Upload the generated PDF to durable storage and persist pdfPath in a later section.
-      // TODO: Track PDF generation metadata/versioning once report delivery storage is implemented.
+      // PDF storage and delivery metadata persistence are intentionally deferred until the later delivery-storage section.
 
       return new NextResponse(Buffer.from(pdf), {
         status: 200,
