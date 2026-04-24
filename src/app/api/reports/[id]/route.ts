@@ -16,12 +16,18 @@ async function getScopedReport(id: string, workspaceId: string) {
   });
 }
 
-async function ensureScopedRelations(workspaceId: string, clientId?: string, reportTemplateId?: string) {
-  const [client, template] = await Promise.all([
+async function ensureScopedRelations(workspaceId: string, clientId?: string, projectId?: string, reportTemplateId?: string) {
+  const [client, project, template] = await Promise.all([
     clientId
       ? prisma.client.findFirst({
           where: { id: clientId, workspaceId },
           select: { id: true },
+        })
+      : Promise.resolve(null),
+    projectId
+      ? prisma.project.findFirst({
+          where: { id: projectId, workspaceId },
+          select: { id: true, clientId: true },
         })
       : Promise.resolve(null),
     reportTemplateId
@@ -34,6 +40,14 @@ async function ensureScopedRelations(workspaceId: string, clientId?: string, rep
 
   if (clientId && !client) {
     return { ok: false as const, response: NextResponse.json({ error: "Client not found in this workspace." }, { status: 400 }) };
+  }
+
+  if (projectId && !project) {
+    return { ok: false as const, response: NextResponse.json({ error: "Project not found in this workspace." }, { status: 400 }) };
+  }
+
+  if (project && clientId && project.clientId !== clientId) {
+    return { ok: false as const, response: NextResponse.json({ error: "Project does not belong to the selected client." }, { status: 400 }) };
   }
 
   if (reportTemplateId && !template) {
@@ -99,7 +113,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: "Update payload cannot be empty." }, { status: 400 });
     }
 
-    const scopedRelations = await ensureScopedRelations(workspace.workspaceId, data.clientId, data.reportTemplateId);
+    const nextClientId = data.clientId ?? existingReport.clientId;
+    const nextProjectId = Object.prototype.hasOwnProperty.call(data, "projectId") ? data.projectId : existingReport.projectId ?? undefined;
+    const scopedRelations = await ensureScopedRelations(workspace.workspaceId, nextClientId, nextProjectId, data.reportTemplateId);
     if (!scopedRelations.ok) {
       return scopedRelations.response;
     }

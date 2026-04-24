@@ -6,8 +6,8 @@ import { prisma } from "@/lib/prisma";
 import { resolveWorkspaceForRequest } from "@/lib/workspace";
 import { reportSchema } from "@/lib/validations/report";
 
-async function ensureScopedRelations(workspaceId: string, clientId: string, reportTemplateId?: string) {
-  const [client, template] = await Promise.all([
+async function ensureScopedRelations(workspaceId: string, clientId: string, projectId?: string, reportTemplateId?: string) {
+  const [client, project, template] = await Promise.all([
     prisma.client.findFirst({
       where: {
         id: clientId,
@@ -15,6 +15,15 @@ async function ensureScopedRelations(workspaceId: string, clientId: string, repo
       },
       select: { id: true },
     }),
+    projectId
+      ? prisma.project.findFirst({
+          where: {
+            id: projectId,
+            workspaceId,
+          },
+          select: { id: true, clientId: true },
+        })
+      : Promise.resolve(null),
     reportTemplateId
       ? prisma.reportTemplate.findFirst({
           where: {
@@ -28,6 +37,14 @@ async function ensureScopedRelations(workspaceId: string, clientId: string, repo
 
   if (!client) {
     return { ok: false as const, response: NextResponse.json({ error: "Client not found in this workspace." }, { status: 400 }) };
+  }
+
+  if (projectId && !project) {
+    return { ok: false as const, response: NextResponse.json({ error: "Project not found in this workspace." }, { status: 400 }) };
+  }
+
+  if (project && project.clientId !== clientId) {
+    return { ok: false as const, response: NextResponse.json({ error: "Project does not belong to the selected client." }, { status: 400 }) };
   }
 
   if (reportTemplateId && !template) {
@@ -86,7 +103,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const data = reportSchema.parse(body);
 
-    const scopedRelations = await ensureScopedRelations(workspace.workspaceId, data.clientId, data.reportTemplateId);
+    const scopedRelations = await ensureScopedRelations(workspace.workspaceId, data.clientId, data.projectId, data.reportTemplateId);
     if (!scopedRelations.ok) {
       return scopedRelations.response;
     }

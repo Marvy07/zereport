@@ -18,7 +18,6 @@ interface Option {
 interface ReportFormValues {
   title: string;
   clientId: string;
-  projectId?: string;
   reportTemplateId?: string;
   periodStart?: string;
   periodEnd?: string;
@@ -37,7 +36,6 @@ interface ReportFormProps {
 const defaultValues: ReportFormValues = {
   title: "",
   clientId: "",
-  projectId: undefined,
   reportTemplateId: undefined,
   periodStart: undefined,
   periodEnd: undefined,
@@ -59,7 +57,6 @@ export function ReportForm({ mode, reportId, clients, templates, initialValues, 
     ...defaultValues,
     title: initialValues?.title ?? defaultValues.title,
     clientId: initialValues?.clientId ?? defaultValues.clientId,
-    projectId: initialValues?.projectId ?? defaultValues.projectId,
     reportTemplateId: initialValues?.reportTemplateId ?? defaultValues.reportTemplateId,
     periodStart: toDateInputValue(initialValues?.periodStart),
     periodEnd: toDateInputValue(initialValues?.periodEnd),
