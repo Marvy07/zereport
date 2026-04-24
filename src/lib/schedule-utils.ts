@@ -12,6 +12,9 @@ interface ScheduleParams {
 /**
  * Compute the next scheduled run time from now based on schedule parameters.
  * Uses a simple UTC-based heuristic. For production, consider a proper tz-aware scheduler.
+ *
+ * Always returns a non-null Date. The `nextRunAt` field in the database schema is nullable
+ * to represent "never run" or "paused" states — do not confuse that with this return type.
  */
 export function computeNextRunAt(params: ScheduleParams): Date {
   const now = new Date();
@@ -40,10 +43,6 @@ export function computeNextRunAt(params: ScheduleParams): Date {
       const currentDay = next.getUTCDay();
       let daysUntil = (targetDay - currentDay + 7) % 7;
       if (daysUntil === 0 && next <= now) daysUntil = 14;
-      else if (daysUntil < 7) {
-        // Use 14-day interval from now
-        daysUntil = daysUntil === 0 ? 14 : daysUntil;
-      }
       next.setUTCDate(next.getUTCDate() + daysUntil);
       break;
     }
