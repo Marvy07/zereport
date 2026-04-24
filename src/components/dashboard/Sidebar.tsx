@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  CalendarClock,
   FileText,
   LayoutDashboard,
   LayoutTemplate,
@@ -18,6 +19,7 @@ const navItems = [
   { href: "/clients", label: "Clients", icon: Users },
   { href: "/reports", label: "Reports", icon: FileText },
   { href: "/templates", label: "Templates", icon: LayoutTemplate },
+  { href: "/schedules", label: "Schedules", icon: CalendarClock },
   { href: "/integrations", label: "Integrations", icon: Plug },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
