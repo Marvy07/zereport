@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, Pencil } from "lucide-react";
+import { Download, ExternalLink, FileText, Pencil } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { Header } from "@/components/dashboard/Header";
@@ -90,7 +90,7 @@ export default async function ReportsPage() {
                         <th className="px-4 py-3 font-medium">Status</th>
                         <th className="px-4 py-3 font-medium">Period</th>
                         <th className="px-4 py-3 font-medium">Updated</th>
-                        <th className="px-4 py-3 font-medium">Action</th>
+                        <th className="px-4 py-3 font-medium">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 bg-white text-slate-700">
@@ -104,10 +104,22 @@ export default async function ReportsPage() {
                           <td className="px-4 py-4">{formatPeriod(report.periodStart, report.periodEnd)}</td>
                           <td className="px-4 py-4">{new Date(report.updatedAt).toLocaleDateString()}</td>
                           <td className="px-4 py-4">
-                            <Link href={`/reports/${report.id}`} className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:underline">
-                              <Pencil className="h-3.5 w-3.5" />
-                              Edit
-                            </Link>
+                            <div className="flex flex-wrap items-center gap-3">
+                              <Link href={`/reports/${report.id}`} className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:underline">
+                                <Pencil className="h-3.5 w-3.5" />
+                                Edit
+                              </Link>
+                              {report.webSlug ? (
+                                <Link href={`/r/${report.webSlug}`} target="_blank" className="inline-flex items-center gap-1 text-sm font-medium text-slate-700 hover:underline">
+                                  <ExternalLink className="h-3.5 w-3.5" />
+                                  View hosted report
+                                </Link>
+                              ) : null}
+                              <Link href={`/api/reports/${report.id}/pdf`} className="inline-flex items-center gap-1 text-sm font-medium text-slate-700 hover:underline">
+                                <Download className="h-3.5 w-3.5" />
+                                Download PDF
+                              </Link>
+                            </div>
                           </td>
                         </tr>
                       ))}
