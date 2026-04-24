@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { Header } from "@/components/dashboard/Header";
 import { ReportForm } from "@/components/reports/ReportForm";
+import { SendReportButton } from "@/components/reports/SendReportButton";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { handleWorkspaceResolutionFailure, resolveWorkspaceForRequest } from "@/lib/workspace";
@@ -28,6 +29,16 @@ export default async function EditReportPage({ params }: { params: Promise<{ id:
         id,
         workspaceId: workspace.workspaceId,
       },
+      include: {
+        client: {
+          select: {
+            primaryEmail: true,
+            contacts: {
+              select: { email: true },
+            },
+          },
+        },
+      },
     }),
     prisma.client.findMany({
       where: {
@@ -48,22 +59,26 @@ export default async function EditReportPage({ params }: { params: Promise<{ id:
     notFound();
   }
 
+  const hasRecipients = Boolean(report.client.primaryEmail || report.client.contacts.length);
+
   return (
     <>
       <Header title={`Edit ${report.title}`} description="Update report metadata, assign a template, or change delivery readiness." />
       <main className="flex-1 space-y-6 p-6">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-start gap-3">
           {report.webSlug ? (
             <Link href={`/r/${report.webSlug}`} target="_blank" className="inline-flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
               <ExternalLink className="h-4 w-4" />
               View hosted report
             </Link>
           ) : null}
+          <SendReportButton reportId={report.id} hasRecipients={hasRecipients} />
           <Link href={`/api/reports/${report.id}/pdf`} className="inline-flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
             <Download className="h-4 w-4" />
             Download PDF
           </Link>
         </div>
+        {!hasRecipients ? <p className="text-sm text-amber-600">This client needs a primary email or contact email before the report can be sent.</p> : null}
         <ReportForm
           mode="edit"
           reportId={report.id}

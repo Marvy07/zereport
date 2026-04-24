@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Download, ExternalLink, FileText, Pencil } from "lucide-react";
+
+import { SendReportButton } from "@/components/reports/SendReportButton";
 import { redirect } from "next/navigation";
 
 import { Header } from "@/components/dashboard/Header";
@@ -33,6 +35,8 @@ function getBadgeVariant(status: string): "secondary" | "outline" | "default" {
       return "default";
     case "ARCHIVED":
       return "outline";
+    case "SENT":
+      return "default";
     default:
       return "secondary";
   }
@@ -60,6 +64,12 @@ export default async function ReportsPage() {
       client: {
         select: {
           name: true,
+          primaryEmail: true,
+          contacts: {
+            select: {
+              email: true,
+            },
+          },
         },
       },
     },
@@ -90,6 +100,7 @@ export default async function ReportsPage() {
                         <th className="px-4 py-3 font-medium">Status</th>
                         <th className="px-4 py-3 font-medium">Period</th>
                         <th className="px-4 py-3 font-medium">Updated</th>
+                        <th className="px-4 py-3 font-medium">Sent</th>
                         <th className="px-4 py-3 font-medium">Actions</th>
                       </tr>
                     </thead>
@@ -103,8 +114,10 @@ export default async function ReportsPage() {
                           </td>
                           <td className="px-4 py-4">{formatPeriod(report.periodStart, report.periodEnd)}</td>
                           <td className="px-4 py-4">{new Date(report.updatedAt).toLocaleDateString()}</td>
+                          <td className="px-4 py-4">{report.sentAt ? new Date(report.sentAt).toLocaleString() : "Not sent"}</td>
                           <td className="px-4 py-4">
                             <div className="flex flex-wrap items-center gap-3">
+                              <SendReportButton reportId={report.id} hasRecipients={Boolean(report.client.primaryEmail || report.client.contacts.length)} />
                               <Link href={`/reports/${report.id}`} className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:underline">
                                 <Pencil className="h-3.5 w-3.5" />
                                 Edit
