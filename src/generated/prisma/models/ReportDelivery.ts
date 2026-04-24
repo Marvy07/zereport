@@ -30,6 +30,7 @@ export type ReportDeliveryMinAggregateOutputType = {
   recipientEmail: string | null
   recipientName: string | null
   status: $Enums.ReportDeliveryStatus | null
+  deliveryTokenHash: string | null
   sentAt: Date | null
   openedAt: Date | null
   errorMsg: string | null
@@ -43,6 +44,7 @@ export type ReportDeliveryMaxAggregateOutputType = {
   recipientEmail: string | null
   recipientName: string | null
   status: $Enums.ReportDeliveryStatus | null
+  deliveryTokenHash: string | null
   sentAt: Date | null
   openedAt: Date | null
   errorMsg: string | null
@@ -56,6 +58,7 @@ export type ReportDeliveryCountAggregateOutputType = {
   recipientEmail: number
   recipientName: number
   status: number
+  deliveryTokenHash: number
   sentAt: number
   openedAt: number
   errorMsg: number
@@ -71,6 +74,7 @@ export type ReportDeliveryMinAggregateInputType = {
   recipientEmail?: true
   recipientName?: true
   status?: true
+  deliveryTokenHash?: true
   sentAt?: true
   openedAt?: true
   errorMsg?: true
@@ -84,6 +88,7 @@ export type ReportDeliveryMaxAggregateInputType = {
   recipientEmail?: true
   recipientName?: true
   status?: true
+  deliveryTokenHash?: true
   sentAt?: true
   openedAt?: true
   errorMsg?: true
@@ -97,6 +102,7 @@ export type ReportDeliveryCountAggregateInputType = {
   recipientEmail?: true
   recipientName?: true
   status?: true
+  deliveryTokenHash?: true
   sentAt?: true
   openedAt?: true
   errorMsg?: true
@@ -183,6 +189,7 @@ export type ReportDeliveryGroupByOutputType = {
   recipientEmail: string
   recipientName: string | null
   status: $Enums.ReportDeliveryStatus
+  deliveryTokenHash: string | null
   sentAt: Date | null
   openedAt: Date | null
   errorMsg: string | null
@@ -217,6 +224,7 @@ export type ReportDeliveryWhereInput = {
   recipientEmail?: Prisma.StringFilter<"ReportDelivery"> | string
   recipientName?: Prisma.StringNullableFilter<"ReportDelivery"> | string | null
   status?: Prisma.EnumReportDeliveryStatusFilter<"ReportDelivery"> | $Enums.ReportDeliveryStatus
+  deliveryTokenHash?: Prisma.StringNullableFilter<"ReportDelivery"> | string | null
   sentAt?: Prisma.DateTimeNullableFilter<"ReportDelivery"> | Date | string | null
   openedAt?: Prisma.DateTimeNullableFilter<"ReportDelivery"> | Date | string | null
   errorMsg?: Prisma.StringNullableFilter<"ReportDelivery"> | string | null
@@ -231,6 +239,7 @@ export type ReportDeliveryOrderByWithRelationInput = {
   recipientEmail?: Prisma.SortOrder
   recipientName?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  deliveryTokenHash?: Prisma.SortOrderInput | Prisma.SortOrder
   sentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   openedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   errorMsg?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -241,6 +250,7 @@ export type ReportDeliveryOrderByWithRelationInput = {
 
 export type ReportDeliveryWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  reportId_recipientEmail?: Prisma.ReportDeliveryReportIdRecipientEmailCompoundUniqueInput
   AND?: Prisma.ReportDeliveryWhereInput | Prisma.ReportDeliveryWhereInput[]
   OR?: Prisma.ReportDeliveryWhereInput[]
   NOT?: Prisma.ReportDeliveryWhereInput | Prisma.ReportDeliveryWhereInput[]
@@ -248,13 +258,14 @@ export type ReportDeliveryWhereUniqueInput = Prisma.AtLeast<{
   recipientEmail?: Prisma.StringFilter<"ReportDelivery"> | string
   recipientName?: Prisma.StringNullableFilter<"ReportDelivery"> | string | null
   status?: Prisma.EnumReportDeliveryStatusFilter<"ReportDelivery"> | $Enums.ReportDeliveryStatus
+  deliveryTokenHash?: Prisma.StringNullableFilter<"ReportDelivery"> | string | null
   sentAt?: Prisma.DateTimeNullableFilter<"ReportDelivery"> | Date | string | null
   openedAt?: Prisma.DateTimeNullableFilter<"ReportDelivery"> | Date | string | null
   errorMsg?: Prisma.StringNullableFilter<"ReportDelivery"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ReportDelivery"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ReportDelivery"> | Date | string
   report?: Prisma.XOR<Prisma.ReportScalarRelationFilter, Prisma.ReportWhereInput>
-}, "id">
+}, "id" | "reportId_recipientEmail">
 
 export type ReportDeliveryOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -262,6 +273,7 @@ export type ReportDeliveryOrderByWithAggregationInput = {
   recipientEmail?: Prisma.SortOrder
   recipientName?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  deliveryTokenHash?: Prisma.SortOrderInput | Prisma.SortOrder
   sentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   openedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   errorMsg?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -281,6 +293,7 @@ export type ReportDeliveryScalarWhereWithAggregatesInput = {
   recipientEmail?: Prisma.StringWithAggregatesFilter<"ReportDelivery"> | string
   recipientName?: Prisma.StringNullableWithAggregatesFilter<"ReportDelivery"> | string | null
   status?: Prisma.EnumReportDeliveryStatusWithAggregatesFilter<"ReportDelivery"> | $Enums.ReportDeliveryStatus
+  deliveryTokenHash?: Prisma.StringNullableWithAggregatesFilter<"ReportDelivery"> | string | null
   sentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ReportDelivery"> | Date | string | null
   openedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ReportDelivery"> | Date | string | null
   errorMsg?: Prisma.StringNullableWithAggregatesFilter<"ReportDelivery"> | string | null
@@ -293,6 +306,7 @@ export type ReportDeliveryCreateInput = {
   recipientEmail: string
   recipientName?: string | null
   status?: $Enums.ReportDeliveryStatus
+  deliveryTokenHash?: string | null
   sentAt?: Date | string | null
   openedAt?: Date | string | null
   errorMsg?: string | null
@@ -307,6 +321,7 @@ export type ReportDeliveryUncheckedCreateInput = {
   recipientEmail: string
   recipientName?: string | null
   status?: $Enums.ReportDeliveryStatus
+  deliveryTokenHash?: string | null
   sentAt?: Date | string | null
   openedAt?: Date | string | null
   errorMsg?: string | null
@@ -319,6 +334,7 @@ export type ReportDeliveryUpdateInput = {
   recipientEmail?: Prisma.StringFieldUpdateOperationsInput | string
   recipientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumReportDeliveryStatusFieldUpdateOperationsInput | $Enums.ReportDeliveryStatus
+  deliveryTokenHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   openedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMsg?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -333,6 +349,7 @@ export type ReportDeliveryUncheckedUpdateInput = {
   recipientEmail?: Prisma.StringFieldUpdateOperationsInput | string
   recipientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumReportDeliveryStatusFieldUpdateOperationsInput | $Enums.ReportDeliveryStatus
+  deliveryTokenHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   openedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMsg?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -346,6 +363,7 @@ export type ReportDeliveryCreateManyInput = {
   recipientEmail: string
   recipientName?: string | null
   status?: $Enums.ReportDeliveryStatus
+  deliveryTokenHash?: string | null
   sentAt?: Date | string | null
   openedAt?: Date | string | null
   errorMsg?: string | null
@@ -358,6 +376,7 @@ export type ReportDeliveryUpdateManyMutationInput = {
   recipientEmail?: Prisma.StringFieldUpdateOperationsInput | string
   recipientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumReportDeliveryStatusFieldUpdateOperationsInput | $Enums.ReportDeliveryStatus
+  deliveryTokenHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   openedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMsg?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -371,6 +390,7 @@ export type ReportDeliveryUncheckedUpdateManyInput = {
   recipientEmail?: Prisma.StringFieldUpdateOperationsInput | string
   recipientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumReportDeliveryStatusFieldUpdateOperationsInput | $Enums.ReportDeliveryStatus
+  deliveryTokenHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   openedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMsg?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -388,12 +408,18 @@ export type ReportDeliveryOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type ReportDeliveryReportIdRecipientEmailCompoundUniqueInput = {
+  reportId: string
+  recipientEmail: string
+}
+
 export type ReportDeliveryCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   reportId?: Prisma.SortOrder
   recipientEmail?: Prisma.SortOrder
   recipientName?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  deliveryTokenHash?: Prisma.SortOrder
   sentAt?: Prisma.SortOrder
   openedAt?: Prisma.SortOrder
   errorMsg?: Prisma.SortOrder
@@ -407,6 +433,7 @@ export type ReportDeliveryMaxOrderByAggregateInput = {
   recipientEmail?: Prisma.SortOrder
   recipientName?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  deliveryTokenHash?: Prisma.SortOrder
   sentAt?: Prisma.SortOrder
   openedAt?: Prisma.SortOrder
   errorMsg?: Prisma.SortOrder
@@ -420,6 +447,7 @@ export type ReportDeliveryMinOrderByAggregateInput = {
   recipientEmail?: Prisma.SortOrder
   recipientName?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  deliveryTokenHash?: Prisma.SortOrder
   sentAt?: Prisma.SortOrder
   openedAt?: Prisma.SortOrder
   errorMsg?: Prisma.SortOrder
@@ -478,6 +506,7 @@ export type ReportDeliveryCreateWithoutReportInput = {
   recipientEmail: string
   recipientName?: string | null
   status?: $Enums.ReportDeliveryStatus
+  deliveryTokenHash?: string | null
   sentAt?: Date | string | null
   openedAt?: Date | string | null
   errorMsg?: string | null
@@ -490,6 +519,7 @@ export type ReportDeliveryUncheckedCreateWithoutReportInput = {
   recipientEmail: string
   recipientName?: string | null
   status?: $Enums.ReportDeliveryStatus
+  deliveryTokenHash?: string | null
   sentAt?: Date | string | null
   openedAt?: Date | string | null
   errorMsg?: string | null
@@ -532,6 +562,7 @@ export type ReportDeliveryScalarWhereInput = {
   recipientEmail?: Prisma.StringFilter<"ReportDelivery"> | string
   recipientName?: Prisma.StringNullableFilter<"ReportDelivery"> | string | null
   status?: Prisma.EnumReportDeliveryStatusFilter<"ReportDelivery"> | $Enums.ReportDeliveryStatus
+  deliveryTokenHash?: Prisma.StringNullableFilter<"ReportDelivery"> | string | null
   sentAt?: Prisma.DateTimeNullableFilter<"ReportDelivery"> | Date | string | null
   openedAt?: Prisma.DateTimeNullableFilter<"ReportDelivery"> | Date | string | null
   errorMsg?: Prisma.StringNullableFilter<"ReportDelivery"> | string | null
@@ -544,6 +575,7 @@ export type ReportDeliveryCreateManyReportInput = {
   recipientEmail: string
   recipientName?: string | null
   status?: $Enums.ReportDeliveryStatus
+  deliveryTokenHash?: string | null
   sentAt?: Date | string | null
   openedAt?: Date | string | null
   errorMsg?: string | null
@@ -556,6 +588,7 @@ export type ReportDeliveryUpdateWithoutReportInput = {
   recipientEmail?: Prisma.StringFieldUpdateOperationsInput | string
   recipientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumReportDeliveryStatusFieldUpdateOperationsInput | $Enums.ReportDeliveryStatus
+  deliveryTokenHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   openedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMsg?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -568,6 +601,7 @@ export type ReportDeliveryUncheckedUpdateWithoutReportInput = {
   recipientEmail?: Prisma.StringFieldUpdateOperationsInput | string
   recipientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumReportDeliveryStatusFieldUpdateOperationsInput | $Enums.ReportDeliveryStatus
+  deliveryTokenHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   openedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMsg?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -580,6 +614,7 @@ export type ReportDeliveryUncheckedUpdateManyWithoutReportInput = {
   recipientEmail?: Prisma.StringFieldUpdateOperationsInput | string
   recipientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumReportDeliveryStatusFieldUpdateOperationsInput | $Enums.ReportDeliveryStatus
+  deliveryTokenHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   openedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMsg?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -595,6 +630,7 @@ export type ReportDeliverySelect<ExtArgs extends runtime.Types.Extensions.Intern
   recipientEmail?: boolean
   recipientName?: boolean
   status?: boolean
+  deliveryTokenHash?: boolean
   sentAt?: boolean
   openedAt?: boolean
   errorMsg?: boolean
@@ -609,6 +645,7 @@ export type ReportDeliverySelectCreateManyAndReturn<ExtArgs extends runtime.Type
   recipientEmail?: boolean
   recipientName?: boolean
   status?: boolean
+  deliveryTokenHash?: boolean
   sentAt?: boolean
   openedAt?: boolean
   errorMsg?: boolean
@@ -623,6 +660,7 @@ export type ReportDeliverySelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   recipientEmail?: boolean
   recipientName?: boolean
   status?: boolean
+  deliveryTokenHash?: boolean
   sentAt?: boolean
   openedAt?: boolean
   errorMsg?: boolean
@@ -637,6 +675,7 @@ export type ReportDeliverySelectScalar = {
   recipientEmail?: boolean
   recipientName?: boolean
   status?: boolean
+  deliveryTokenHash?: boolean
   sentAt?: boolean
   openedAt?: boolean
   errorMsg?: boolean
@@ -644,7 +683,7 @@ export type ReportDeliverySelectScalar = {
   updatedAt?: boolean
 }
 
-export type ReportDeliveryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "reportId" | "recipientEmail" | "recipientName" | "status" | "sentAt" | "openedAt" | "errorMsg" | "createdAt" | "updatedAt", ExtArgs["result"]["reportDelivery"]>
+export type ReportDeliveryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "reportId" | "recipientEmail" | "recipientName" | "status" | "deliveryTokenHash" | "sentAt" | "openedAt" | "errorMsg" | "createdAt" | "updatedAt", ExtArgs["result"]["reportDelivery"]>
 export type ReportDeliveryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   report?: boolean | Prisma.ReportDefaultArgs<ExtArgs>
 }
@@ -666,6 +705,7 @@ export type $ReportDeliveryPayload<ExtArgs extends runtime.Types.Extensions.Inte
     recipientEmail: string
     recipientName: string | null
     status: $Enums.ReportDeliveryStatus
+    deliveryTokenHash: string | null
     sentAt: Date | null
     openedAt: Date | null
     errorMsg: string | null
@@ -1100,6 +1140,7 @@ export interface ReportDeliveryFieldRefs {
   readonly recipientEmail: Prisma.FieldRef<"ReportDelivery", 'String'>
   readonly recipientName: Prisma.FieldRef<"ReportDelivery", 'String'>
   readonly status: Prisma.FieldRef<"ReportDelivery", 'ReportDeliveryStatus'>
+  readonly deliveryTokenHash: Prisma.FieldRef<"ReportDelivery", 'String'>
   readonly sentAt: Prisma.FieldRef<"ReportDelivery", 'DateTime'>
   readonly openedAt: Prisma.FieldRef<"ReportDelivery", 'DateTime'>
   readonly errorMsg: Prisma.FieldRef<"ReportDelivery", 'String'>

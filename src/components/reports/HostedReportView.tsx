@@ -69,7 +69,7 @@ export function HostedReportView({ report }: HostedReportViewProps) {
         <section className="space-y-4">
           <div>
             <h2 className="text-xl font-semibold text-slate-950">Report sections</h2>
-            <p className="text-sm text-slate-500">This public view will expand as report sections become fully rendered in later sections.</p>
+            <p className="text-sm text-slate-500">This protected delivery view will expand as report sections become fully rendered in later sections.</p>
           </div>
 
           {report.sections.length > 0 ? (

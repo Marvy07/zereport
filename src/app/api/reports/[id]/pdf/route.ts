@@ -39,11 +39,26 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           name: true,
         },
       },
+      deliveries: {
+        where: {
+          status: {
+            in: ["SENT", "OPENED"],
+          },
+        },
+        orderBy: { updatedAt: "desc" },
+        select: {
+          deliveryTokenHash: true,
+        },
+      },
     },
   });
 
   if (!report) {
     return NextResponse.json({ error: "Report not found." }, { status: 404 });
+  }
+
+  if (report.deliveries.length === 0) {
+    return NextResponse.json({ error: "Report must be delivered before a hosted PDF can be generated." }, { status: 409 });
   }
 
   try {
@@ -68,8 +83,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           left: "24px",
         },
       });
-
-      // PDF storage and delivery metadata persistence are intentionally deferred until the later delivery-storage section.
 
       return new NextResponse(Buffer.from(pdf), {
         status: 200,

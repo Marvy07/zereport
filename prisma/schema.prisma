@@ -320,21 +320,24 @@ model ReportSection {
 }
 
 model ReportDelivery {
-  id             String               @id @default(cuid())
-  reportId       String
-  recipientEmail String
-  recipientName  String?
-  status         ReportDeliveryStatus @default(PENDING)
-  sentAt         DateTime?
-  openedAt       DateTime?
-  errorMsg       String?
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
+  id                String               @id @default(cuid())
+  reportId          String
+  recipientEmail    String
+  recipientName     String?
+  status            ReportDeliveryStatus @default(PENDING)
+  deliveryTokenHash String?
+  sentAt            DateTime?
+  openedAt          DateTime?
+  errorMsg          String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
 
   report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
 
+  @@unique([reportId, recipientEmail])
   @@index([reportId])
   @@index([status])
+  @@index([deliveryTokenHash])
 }
 
 enum ReportDeliveryStatus {

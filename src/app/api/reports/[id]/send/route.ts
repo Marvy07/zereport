@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { buildReportEmailHtml, buildReportEmailSubject, buildReportEmailText } from "@/emails/report-email";
 import { prisma } from "@/lib/prisma";
+import { createReportDeliveryToken, hashReportDeliveryToken } from "@/lib/report-delivery";
 import { ensureReportWebSlug } from "@/lib/report-slug";
 import { getReportEmailFromAddress, getResendClient } from "@/lib/resend";
 import { resolveWorkspaceForRequest } from "@/lib/workspace";
@@ -89,28 +90,42 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       client: { name: report.client.name },
     });
     const baseUrl = getBaseUrl(request);
-    const hostedReportUrl = new URL(`/r/${webSlug}`, baseUrl).toString();
-    const pdfDownloadUrl = new URL(`/api/reports/${report.id}/pdf`, baseUrl).toString();
-    const subject = buildReportEmailSubject({ reportTitle: report.title, clientName: report.client.name });
-    const html = buildReportEmailHtml({
-      reportTitle: report.title,
-      clientName: report.client.name,
-      periodStart: report.periodStart,
-      periodEnd: report.periodEnd,
-      hostedReportUrl,
-      pdfDownloadUrl,
-    });
-    const text = buildReportEmailText({
-      reportTitle: report.title,
-      clientName: report.client.name,
-      periodStart: report.periodStart,
-      periodEnd: report.periodEnd,
-      hostedReportUrl,
-      pdfDownloadUrl,
+
+    const preparedRecipients = recipients.map((recipient) => {
+      const deliveryToken = createReportDeliveryToken();
+      const hostedReportUrl = new URL(`/r/${webSlug}`, baseUrl);
+      hostedReportUrl.searchParams.set("token", deliveryToken);
+
+      return {
+        ...recipient,
+        deliveryToken,
+        deliveryTokenHash: hashReportDeliveryToken(deliveryToken),
+        hostedReportUrl: hostedReportUrl.toString(),
+      };
     });
 
+    const pdfDownloadUrl = new URL(`/api/reports/${report.id}/pdf`, baseUrl).toString();
+
     const sendResults = await Promise.allSettled(
-      recipients.map(async (recipient) => {
+      preparedRecipients.map(async (recipient) => {
+        const subject = buildReportEmailSubject({ reportTitle: report.title, clientName: report.client.name });
+        const html = buildReportEmailHtml({
+          reportTitle: report.title,
+          clientName: report.client.name,
+          periodStart: report.periodStart,
+          periodEnd: report.periodEnd,
+          hostedReportUrl: recipient.hostedReportUrl,
+          pdfDownloadUrl,
+        });
+        const text = buildReportEmailText({
+          reportTitle: report.title,
+          clientName: report.client.name,
+          periodStart: report.periodStart,
+          periodEnd: report.periodEnd,
+          hostedReportUrl: recipient.hostedReportUrl,
+          pdfDownloadUrl,
+        });
+
         const emailResult = await resend.emails.send({
           from: getReportEmailFromAddress(),
           to: [recipient.email],
@@ -131,22 +146,64 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const successfulRecipients = sendResults.flatMap((result) => (result.status === "fulfilled" ? [result.value] : []));
     const failedRecipients = sendResults.flatMap((result, index) =>
       result.status === "rejected"
-        ? [{ recipient: recipients[index], error: result.reason instanceof Error ? result.reason.message : String(result.reason) }]
+        ? [{ recipient: preparedRecipients[index], error: result.reason instanceof Error ? result.reason.message : String(result.reason) }]
         : [],
     );
 
     await prisma.$transaction(async (tx) => {
-      if (successfulRecipients.length > 0) {
-        await tx.reportDelivery.createMany({
-          data: successfulRecipients.map((recipient) => ({
+      for (const recipient of successfulRecipients) {
+        await tx.reportDelivery.upsert({
+          where: {
+            reportId_recipientEmail: {
+              reportId: report.id,
+              recipientEmail: recipient.email,
+            },
+          },
+          create: {
             reportId: report.id,
             recipientEmail: recipient.email,
             recipientName: recipient.name ?? null,
             status: "SENT",
             sentAt,
-          })),
+            openedAt: null,
+            errorMsg: null,
+            deliveryTokenHash: recipient.deliveryTokenHash,
+          },
+          update: {
+            recipientName: recipient.name ?? null,
+            status: "SENT",
+            sentAt,
+            openedAt: null,
+            errorMsg: null,
+            deliveryTokenHash: recipient.deliveryTokenHash,
+          },
         });
+      }
 
+      for (const { recipient, error } of failedRecipients) {
+        await tx.reportDelivery.upsert({
+          where: {
+            reportId_recipientEmail: {
+              reportId: report.id,
+              recipientEmail: recipient.email,
+            },
+          },
+          create: {
+            reportId: report.id,
+            recipientEmail: recipient.email,
+            recipientName: recipient.name ?? null,
+            status: "FAILED",
+            errorMsg: error,
+          },
+          update: {
+            recipientName: recipient.name ?? null,
+            status: "FAILED",
+            errorMsg: error,
+          },
+        });
+      }
+
+      if (successfulRecipients.length === recipients.length) {
         await tx.report.update({
           where: { id: report.id },
           data: {
@@ -154,17 +211,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             status: report.status === "ARCHIVED" ? report.status : "SENT",
           },
         });
-      }
-
-      if (failedRecipients.length > 0) {
-        await tx.reportDelivery.createMany({
-          data: failedRecipients.map(({ recipient, error }) => ({
-            reportId: report.id,
-            recipientEmail: recipient.email,
-            recipientName: recipient.name ?? null,
-            status: "FAILED",
-            errorMsg: error,
-          })),
+      } else if (successfulRecipients.length > 0) {
+        await tx.report.update({
+          where: { id: report.id },
+          data: {
+            // Partial delivery should not imply the whole report is fully sent.
+            // Keep the prior non-archived status so operators can see it still needs attention.
+            sentAt,
+            status: report.status === "ARCHIVED" ? report.status : report.status,
+          },
         });
       }
     });
@@ -173,7 +228,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json(
         {
           error: "Failed to send the report email to all recipients.",
-          recipients: failedRecipients,
+          recipients: failedRecipients.map(({ recipient, error }) => ({ recipient: { email: recipient.email, name: recipient.name }, error })),
         },
         { status: 502 },
       );
@@ -182,11 +237,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({
       ok: true,
       reportId: report.id,
-      hostedReportUrl,
       sentAt: sentAt.toISOString(),
       recipients: {
         sent: successfulRecipients.map((recipient) => recipient.email),
-        failed: failedRecipients,
+        failed: failedRecipients.map(({ recipient, error }) => ({ recipient: { email: recipient.email, name: recipient.name }, error })),
       },
       message:
         failedRecipients.length > 0

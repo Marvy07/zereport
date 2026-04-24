@@ -123,7 +123,7 @@ export default async function ReportsPage() {
                                 Edit
                               </Link>
                               {report.webSlug ? (
-                                <Link href={`/r/${report.webSlug}`} target="_blank" className="inline-flex items-center gap-1 text-sm font-medium text-slate-700 hover:underline">
+                                <Link href={`/r/${report.webSlug}?token=requires-email-link`} target="_blank" className="inline-flex items-center gap-1 text-sm font-medium text-slate-700 hover:underline">
                                   <ExternalLink className="h-3.5 w-3.5" />
                                   View hosted report
                                 </Link>

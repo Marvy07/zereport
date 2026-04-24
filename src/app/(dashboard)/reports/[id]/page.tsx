@@ -67,7 +67,7 @@ export default async function EditReportPage({ params }: { params: Promise<{ id:
       <main className="flex-1 space-y-6 p-6">
         <div className="flex flex-wrap items-start gap-3">
           {report.webSlug ? (
-            <Link href={`/r/${report.webSlug}`} target="_blank" className="inline-flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            <Link href={`/r/${report.webSlug}?token=requires-email-link`} target="_blank" className="inline-flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
               <ExternalLink className="h-4 w-4" />
               View hosted report
             </Link>

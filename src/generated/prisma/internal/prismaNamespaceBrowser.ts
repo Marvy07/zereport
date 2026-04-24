@@ -292,6 +292,7 @@ export const ReportDeliveryScalarFieldEnum = {
   recipientEmail: 'recipientEmail',
   recipientName: 'recipientName',
   status: 'status',
+  deliveryTokenHash: 'deliveryTokenHash',
   sentAt: 'sentAt',
   openedAt: 'openedAt',
   errorMsg: 'errorMsg',
