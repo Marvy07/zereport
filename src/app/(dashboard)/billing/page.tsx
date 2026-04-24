@@ -1,5 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 
 import { Header } from "@/components/dashboard/Header";

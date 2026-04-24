@@ -399,6 +399,7 @@ model Subscription {
 }
 
 enum SubscriptionPlan {
+  // STARTER is reserved for legacy/migration purposes; not exposed in billing layer
   FREE
   STARTER
   PRO

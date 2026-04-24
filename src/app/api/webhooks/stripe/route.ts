@@ -7,11 +7,18 @@ import { stripe, resolvePlanFromPriceId } from "@/lib/stripe";
 // Next.js must not parse the body — Stripe needs the raw bytes for signature verification.
 export const runtime = "nodejs";
 
+interface SubscriptionPeriod {
+  currentPeriodStart?: Date | null;
+  currentPeriodEnd?: Date | null;
+  cancelAtPeriodEnd?: boolean;
+}
+
 async function upsertSubscription(
   workspaceId: string,
   plan: "FREE" | "PRO" | "AGENCY",
   stripeCustomerId: string,
   stripeSubscriptionId?: string | null,
+  period: SubscriptionPeriod = {},
 ) {
   await prisma.subscription.upsert({
     where: { workspaceId },
@@ -21,12 +28,18 @@ async function upsertSubscription(
       stripeSubscriptionId: stripeSubscriptionId ?? undefined,
       plan,
       status: "ACTIVE",
+      currentPeriodStart: period.currentPeriodStart ?? undefined,
+      currentPeriodEnd: period.currentPeriodEnd ?? undefined,
+      cancelAtPeriodEnd: period.cancelAtPeriodEnd ?? false,
     },
     update: {
       stripeCustomerId,
       stripeSubscriptionId: stripeSubscriptionId ?? undefined,
       plan,
       status: "ACTIVE",
+      currentPeriodStart: period.currentPeriodStart ?? undefined,
+      currentPeriodEnd: period.currentPeriodEnd ?? undefined,
+      cancelAtPeriodEnd: period.cancelAtPeriodEnd ?? false,
     },
   });
 }
@@ -74,13 +87,24 @@ export async function POST(req: NextRequest) {
         // otherwise fall back to reading the subscription.
         let plan: "FREE" | "PRO" | "AGENCY" = "PRO";
 
+        let period: SubscriptionPeriod = {};
         if (stripeSubscriptionId) {
           const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
           const priceId = subscription.items.data[0]?.price?.id ?? "";
           plan = resolvePlanFromPriceId(priceId);
+          const item = subscription.items.data[0];
+          period = {
+            currentPeriodStart: item?.current_period_start != null
+              ? new Date(item.current_period_start * 1000)
+              : null,
+            currentPeriodEnd: item?.current_period_end != null
+              ? new Date(item.current_period_end * 1000)
+              : null,
+            cancelAtPeriodEnd: subscription.cancel_at_period_end,
+          };
         }
 
-        await upsertSubscription(workspaceId, plan, stripeCustomerId, stripeSubscriptionId);
+        await upsertSubscription(workspaceId, plan, stripeCustomerId, stripeSubscriptionId, period);
         break;
       }
 
@@ -104,6 +128,13 @@ export async function POST(req: NextRequest) {
               plan,
               stripeSubscriptionId: subscription.id,
               status: "ACTIVE",
+              currentPeriodStart: subscription.items.data[0]?.current_period_start != null
+                ? new Date(subscription.items.data[0].current_period_start * 1000)
+                : undefined,
+              currentPeriodEnd: subscription.items.data[0]?.current_period_end != null
+                ? new Date(subscription.items.data[0].current_period_end * 1000)
+                : undefined,
+              cancelAtPeriodEnd: subscription.cancel_at_period_end,
             },
           });
         }
