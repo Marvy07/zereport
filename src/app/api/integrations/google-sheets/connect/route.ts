@@ -57,6 +57,7 @@ export async function GET(req: NextRequest) {
         oauthState: state,
         oauthRequestedAt: new Date().toISOString(),
         redirectUri: config.redirectUri ?? null,
+        workspaceId: workspace.workspaceId,
       },
     },
     create: {
@@ -71,6 +72,7 @@ export async function GET(req: NextRequest) {
         oauthState: state,
         oauthRequestedAt: new Date().toISOString(),
         redirectUri: config.redirectUri ?? null,
+        workspaceId: workspace.workspaceId,
       },
     },
   });

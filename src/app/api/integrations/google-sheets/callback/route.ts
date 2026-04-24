@@ -2,19 +2,12 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
-import { resolveWorkspaceForRequest } from "@/lib/workspace";
 
 export async function GET(req: NextRequest) {
   const { userId } = await auth();
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-  }
-
-  const workspace = await resolveWorkspaceForRequest();
-
-  if (!workspace.ok) {
-    return NextResponse.json({ error: workspace.error, code: workspace.code }, { status: workspace.status });
   }
 
   const code = req.nextUrl.searchParams.get("code");
@@ -31,7 +24,6 @@ export async function GET(req: NextRequest) {
 
   const integration = await prisma.integration.findFirst({
     where: {
-      workspaceId: workspace.workspaceId,
       type: "GOOGLE_SHEETS",
       configJson: {
         path: ["oauthState"],
@@ -56,16 +48,25 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Missing OAuth code." }, { status: 400 });
   }
 
+  const existingConfig =
+    typeof integration.configJson === "object" && integration.configJson && !Array.isArray(integration.configJson)
+      ? integration.configJson
+      : {};
+
   const updatedIntegration = await prisma.integration.update({
     where: { id: integration.id },
     data: {
-      status: "CONNECTED",
-      lastError: null,
-      externalAccountId: `google-oauth:${state}`,
+      // Scaffold note: we only confirm that Google returned to our callback with a code.
+      // We do not exchange tokens in Section 10, so this must remain non-CONNECTED.
+      status: "DISCONNECTED",
+      lastError: "OAuth callback received, but token exchange is not implemented in this scaffold.",
+      externalAccountId: null,
       configJson: {
-        ...(typeof integration.configJson === "object" && integration.configJson ? integration.configJson : {}),
+        ...existingConfig,
+        workspaceId: integration.workspaceId,
         oauthCompletedAt: new Date().toISOString(),
         oauthCodeReceived: true,
+        connectionState: "CALLBACK_RECEIVED",
       },
       lastSyncedAt: null,
     },
@@ -73,6 +74,6 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     integration: updatedIntegration,
-    message: "Google Sheets connection scaffold completed. Token exchange is not implemented yet.",
+    message: "Google OAuth callback received. Integration remains disconnected until token exchange is implemented.",
   });
 }
