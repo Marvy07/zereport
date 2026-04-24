@@ -52,3 +52,45 @@
 - [ ] `npm run build` passes locally
 - [ ] `npx prisma migrate status` shows all migrations applied
 - [ ] Smoke test: sign up → onboarding → create client → create report → billing page
+
+---
+
+## Container Deployment (AWS / GCP / Azure)
+
+The app builds to a self-contained Docker image via `output: "standalone"` in `next.config.ts`.
+
+### Build the image
+```bash
+docker build -t zereport:latest .
+```
+
+### Run locally
+```bash
+docker run -p 3000:3000 --env-file .env.local zereport:latest
+```
+
+### Local dev with Docker Compose (includes local Postgres)
+```bash
+cp .env.example .env.local   # fill in your values
+docker compose up
+```
+
+### Cloud targets
+
+| Platform | Service | Notes |
+|---|---|---|
+| **AWS** | ECS Fargate + ECR | Push image to ECR, deploy task definition |
+| **GCP** | Cloud Run | `gcloud run deploy --image gcr.io/PROJECT/zereport` |
+| **Azure** | Container Apps | Push to ACR, deploy container app |
+| **Self-hosted** | Any Docker host | `docker run` or `docker compose` |
+
+### Cron (replacing vercel.json)
+`/api/cron/send-reports` is triggered hourly. Replace `vercel.json` cron with:
+- **AWS**: EventBridge Scheduler → HTTP target
+- **GCP**: Cloud Scheduler → HTTP target
+- **Azure**: Logic Apps timer → HTTP action
+- All must pass header: `Authorization: Bearer $CRON_SECRET`
+
+### CI/CD
+`.github/workflows/ci.yml` runs TypeScript + build checks on every push.
+Add registry login + `push: true` to the docker job for automated image pushes.

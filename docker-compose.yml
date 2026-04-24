@@ -1,0 +1,43 @@
+# Local development — runs the app against a local Postgres instance.
+# For production use the Dockerfile directly with your cloud provider.
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      target: builder        # Use builder stage for dev (includes devDeps)
+    command: npm run dev
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    environment:
+      NODE_ENV: development
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: zereport
+      POSTGRES_PASSWORD: zereport
+      POSTGRES_DB: zereport
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zereport"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
