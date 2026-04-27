@@ -126,3 +126,8 @@ export type AuditLog = Prisma.AuditLogModel
  * 
  */
 export type FeatureFlag = Prisma.FeatureFlagModel
+/**
+ * Model DiagnosticSubmission
+ * 
+ */
+export type DiagnosticSubmission = Prisma.DiagnosticSubmissionModel

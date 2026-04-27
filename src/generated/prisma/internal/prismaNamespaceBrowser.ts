@@ -67,7 +67,8 @@ export const ModelName = {
   ReportSchedule: 'ReportSchedule',
   Subscription: 'Subscription',
   AuditLog: 'AuditLog',
-  FeatureFlag: 'FeatureFlag'
+  FeatureFlag: 'FeatureFlag',
+  DiagnosticSubmission: 'DiagnosticSubmission'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -367,6 +368,50 @@ export const FeatureFlagScalarFieldEnum = {
 } as const
 
 export type FeatureFlagScalarFieldEnum = (typeof FeatureFlagScalarFieldEnum)[keyof typeof FeatureFlagScalarFieldEnum]
+
+
+export const DiagnosticSubmissionScalarFieldEnum = {
+  id: 'id',
+  businessName: 'businessName',
+  businessType: 'businessType',
+  monthlyLeadVolume: 'monthlyLeadVolume',
+  avgDealValue: 'avgDealValue',
+  teamSize: 'teamSize',
+  responseSpeed: 'responseSpeed',
+  followUpConsistency: 'followUpConsistency',
+  hasCRM: 'hasCRM',
+  tracksNoShows: 'tracksNoShows',
+  automatesFollowUp: 'automatesFollowUp',
+  estimatedCloseRate: 'estimatedCloseRate',
+  followUpCount: 'followUpCount',
+  hasLeadOwners: 'hasLeadOwners',
+  hasPipelineStages: 'hasPipelineStages',
+  hasHandoffDocs: 'hasHandoffDocs',
+  hasSOPs: 'hasSOPs',
+  hasRoleClarity: 'hasRoleClarity',
+  hasWeeklyReporting: 'hasWeeklyReporting',
+  tracksBottlenecks: 'tracksBottlenecks',
+  hasKPIVisibility: 'hasKPIVisibility',
+  contactName: 'contactName',
+  contactEmail: 'contactEmail',
+  contactPhone: 'contactPhone',
+  website: 'website',
+  answersJson: 'answersJson',
+  leadLeakageScore: 'leadLeakageScore',
+  opsMaturityScore: 'opsMaturityScore',
+  executionVisibilityScore: 'executionVisibilityScore',
+  overallScore: 'overallScore',
+  estimatedMonthlyLoss: 'estimatedMonthlyLoss',
+  estimatedAnnualLoss: 'estimatedAnnualLoss',
+  highestLossStage: 'highestLossStage',
+  recommendationsJson: 'recommendationsJson',
+  diagnosticVersion: 'diagnosticVersion',
+  source: 'source',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DiagnosticSubmissionScalarFieldEnum = (typeof DiagnosticSubmissionScalarFieldEnum)[keyof typeof DiagnosticSubmissionScalarFieldEnum]
 
 
 export const SortOrder = {

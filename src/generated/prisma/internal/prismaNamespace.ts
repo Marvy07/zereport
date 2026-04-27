@@ -400,7 +400,8 @@ export const ModelName = {
   ReportSchedule: 'ReportSchedule',
   Subscription: 'Subscription',
   AuditLog: 'AuditLog',
-  FeatureFlag: 'FeatureFlag'
+  FeatureFlag: 'FeatureFlag',
+  DiagnosticSubmission: 'DiagnosticSubmission'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -416,7 +417,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "platformUser" | "workspace" | "workspaceMember" | "client" | "clientContact" | "project" | "integration" | "integrationProjectLink" | "reportTemplate" | "reportTemplateSection" | "report" | "reportSection" | "reportDelivery" | "reportSchedule" | "subscription" | "auditLog" | "featureFlag"
+    modelProps: "platformUser" | "workspace" | "workspaceMember" | "client" | "clientContact" | "project" | "integration" | "integrationProjectLink" | "reportTemplate" | "reportTemplateSection" | "report" | "reportSection" | "reportDelivery" | "reportSchedule" | "subscription" | "auditLog" | "featureFlag" | "diagnosticSubmission"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1678,6 +1679,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    DiagnosticSubmission: {
+      payload: Prisma.$DiagnosticSubmissionPayload<ExtArgs>
+      fields: Prisma.DiagnosticSubmissionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DiagnosticSubmissionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiagnosticSubmissionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DiagnosticSubmissionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiagnosticSubmissionPayload>
+        }
+        findFirst: {
+          args: Prisma.DiagnosticSubmissionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiagnosticSubmissionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DiagnosticSubmissionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiagnosticSubmissionPayload>
+        }
+        findMany: {
+          args: Prisma.DiagnosticSubmissionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiagnosticSubmissionPayload>[]
+        }
+        create: {
+          args: Prisma.DiagnosticSubmissionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiagnosticSubmissionPayload>
+        }
+        createMany: {
+          args: Prisma.DiagnosticSubmissionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DiagnosticSubmissionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiagnosticSubmissionPayload>[]
+        }
+        delete: {
+          args: Prisma.DiagnosticSubmissionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiagnosticSubmissionPayload>
+        }
+        update: {
+          args: Prisma.DiagnosticSubmissionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiagnosticSubmissionPayload>
+        }
+        deleteMany: {
+          args: Prisma.DiagnosticSubmissionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DiagnosticSubmissionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DiagnosticSubmissionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiagnosticSubmissionPayload>[]
+        }
+        upsert: {
+          args: Prisma.DiagnosticSubmissionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiagnosticSubmissionPayload>
+        }
+        aggregate: {
+          args: Prisma.DiagnosticSubmissionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDiagnosticSubmission>
+        }
+        groupBy: {
+          args: Prisma.DiagnosticSubmissionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DiagnosticSubmissionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DiagnosticSubmissionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DiagnosticSubmissionCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1998,6 +2073,50 @@ export const FeatureFlagScalarFieldEnum = {
 } as const
 
 export type FeatureFlagScalarFieldEnum = (typeof FeatureFlagScalarFieldEnum)[keyof typeof FeatureFlagScalarFieldEnum]
+
+
+export const DiagnosticSubmissionScalarFieldEnum = {
+  id: 'id',
+  businessName: 'businessName',
+  businessType: 'businessType',
+  monthlyLeadVolume: 'monthlyLeadVolume',
+  avgDealValue: 'avgDealValue',
+  teamSize: 'teamSize',
+  responseSpeed: 'responseSpeed',
+  followUpConsistency: 'followUpConsistency',
+  hasCRM: 'hasCRM',
+  tracksNoShows: 'tracksNoShows',
+  automatesFollowUp: 'automatesFollowUp',
+  estimatedCloseRate: 'estimatedCloseRate',
+  followUpCount: 'followUpCount',
+  hasLeadOwners: 'hasLeadOwners',
+  hasPipelineStages: 'hasPipelineStages',
+  hasHandoffDocs: 'hasHandoffDocs',
+  hasSOPs: 'hasSOPs',
+  hasRoleClarity: 'hasRoleClarity',
+  hasWeeklyReporting: 'hasWeeklyReporting',
+  tracksBottlenecks: 'tracksBottlenecks',
+  hasKPIVisibility: 'hasKPIVisibility',
+  contactName: 'contactName',
+  contactEmail: 'contactEmail',
+  contactPhone: 'contactPhone',
+  website: 'website',
+  answersJson: 'answersJson',
+  leadLeakageScore: 'leadLeakageScore',
+  opsMaturityScore: 'opsMaturityScore',
+  executionVisibilityScore: 'executionVisibilityScore',
+  overallScore: 'overallScore',
+  estimatedMonthlyLoss: 'estimatedMonthlyLoss',
+  estimatedAnnualLoss: 'estimatedAnnualLoss',
+  highestLossStage: 'highestLossStage',
+  recommendationsJson: 'recommendationsJson',
+  diagnosticVersion: 'diagnosticVersion',
+  source: 'source',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DiagnosticSubmissionScalarFieldEnum = (typeof DiagnosticSubmissionScalarFieldEnum)[keyof typeof DiagnosticSubmissionScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2404,6 +2523,7 @@ export type GlobalOmitConfig = {
   subscription?: Prisma.SubscriptionOmit
   auditLog?: Prisma.AuditLogOmit
   featureFlag?: Prisma.FeatureFlagOmit
+  diagnosticSubmission?: Prisma.DiagnosticSubmissionOmit
 }
 
 /* Types for Logging */
