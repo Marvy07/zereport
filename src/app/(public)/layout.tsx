@@ -10,6 +10,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           </Link>
           <nav className="flex items-center gap-6 text-sm">
             <Link href="/pricing" className="text-gray-600 hover:text-gray-900">Pricing</Link>
+            <Link href="/diagnostic" className="font-medium text-indigo-600 hover:text-indigo-700">Free Diagnostic</Link>
             <Link href="/sign-in" className="text-gray-600 hover:text-gray-900">Sign in</Link>
             <Link href="/sign-up" className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
               Get started free
