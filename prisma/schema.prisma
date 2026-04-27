@@ -448,3 +448,48 @@ model FeatureFlag {
   @@unique([workspaceId, key])
   @@index([key])
 }
+
+model DiagnosticSubmission {
+  id                       String   @id @default(cuid())
+  businessName             String?
+  businessType             String?
+  monthlyLeadVolume        String?
+  avgDealValue             String?
+  teamSize                 String?
+  responseSpeed            String?
+  followUpConsistency      String?
+  hasCRM                   Boolean?
+  tracksNoShows            Boolean?
+  automatesFollowUp        Boolean?
+  estimatedCloseRate       String?
+  followUpCount            String?
+  hasLeadOwners            Boolean?
+  hasPipelineStages        Boolean?
+  hasHandoffDocs           Boolean?
+  hasSOPs                  Boolean?
+  hasRoleClarity           Boolean?
+  hasWeeklyReporting       Boolean?
+  tracksBottlenecks        Boolean?
+  hasKPIVisibility         Boolean?
+  contactName              String?
+  contactEmail             String?
+  contactPhone             String?
+  website                  String?
+  answersJson              Json?
+  leadLeakageScore         Int?
+  opsMaturityScore         Int?
+  executionVisibilityScore Int?
+  overallScore             Int?
+  estimatedMonthlyLoss     Float?
+  estimatedAnnualLoss      Float?
+  highestLossStage         String?
+  recommendationsJson      Json?
+  diagnosticVersion        String?  @default("1.0")
+  source                   String?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([contactEmail])
+  @@index([overallScore])
+}
