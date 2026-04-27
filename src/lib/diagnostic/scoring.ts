@@ -35,7 +35,7 @@ export interface DiagnosticScores {
 export type ScoreBand = "Strong" | "Leaking Value" | "At Risk" | "Critical";
 
 export function calculateScores(answers: DiagnosticAnswers): DiagnosticScores {
-  // Lead Leakage Score (max 40 raw points, scaled to 0-100)
+  // Lead Leakage Score (max 44 raw points, scaled to 0-100)
   let leadRaw = 0;
   switch (answers.responseSpeed) {
     case "Within 5 minutes": leadRaw += 20; break;
@@ -57,7 +57,8 @@ export function calculateScores(answers: DiagnosticAnswers): DiagnosticScores {
     case "2–3": leadRaw += 2; break;
     default: leadRaw += 0;
   }
-  const leadLeakageScore = Math.round((leadRaw / 40) * 100);
+  if (answers.tracksNoShows) leadRaw += 4;
+  const leadLeakageScore = Math.round((leadRaw / 44) * 100);
 
   // Ops Maturity Score (5 booleans, 20pts each, scaled to 0-100)
   let opsRaw = 0;

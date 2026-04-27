@@ -39,14 +39,14 @@ export function calculateRevenueLoss(
   const estimatedMonthlyLoss = Math.round(volume * deal * closeRate * leakageFactor);
   const estimatedAnnualLoss = estimatedMonthlyLoss * 12;
 
-  let highestLossStage = "Pipeline Leakage";
-  if (answers.responseSpeed === "Next day or longer") {
-    highestLossStage = "Slow Lead Response";
-  } else if (!answers.automatesFollowUp) {
-    highestLossStage = "Follow-Up Gaps";
-  } else if (!answers.hasCRM) {
-    highestLossStage = "No CRM / Lead Tracking";
-  }
+  // Compute which stage contributes most to loss
+  const stages: { name: string; score: number }[] = [
+    { name: "Slow Lead Response", score: answers.responseSpeed === "Next day or longer" ? 40 : answers.responseSpeed === "Same day" ? 20 : 5 },
+    { name: "Follow-Up Gaps", score: !answers.automatesFollowUp ? 30 : answers.followUpConsistency === "Rarely/Never" ? 25 : 5 },
+    { name: "No CRM / Lead Tracking", score: !answers.hasCRM ? 25 : 0 },
+    { name: "Pipeline Leakage", score: !answers.hasPipelineStages ? 20 : 5 },
+  ];
+  const highestLossStage = stages.sort((a, b) => b.score - a.score)[0].name;
 
   return { estimatedMonthlyLoss, estimatedAnnualLoss, highestLossStage };
 }
